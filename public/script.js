@@ -5,8 +5,16 @@ const gridContainer = document.getElementById('gridContainer');
 const introTextInput = document.getElementById('introText');
 let allFiles = []; // Array to keep track of all files
 
+const MAX_FILES = 24; // Maximum number of files allowed
+
 filesInput.addEventListener('change', function(event) {
     const newFiles = Array.from(event.target.files);
+    
+    if (allFiles.length + newFiles.length > MAX_FILES) {
+        alert(`You can only upload a maximum of ${MAX_FILES} files.`);
+        return;
+    }
+
     allFiles = allFiles.concat(newFiles); // Append new files to the existing files
 
     // Clear the grid before adding new images
