@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Showreel Creator</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
 </head>
 <body>
     <div class="nav-wrapper">
@@ -15,6 +16,9 @@
     <form id="uploadForm" enctype="multipart/form-data">
         <h1  class="label-h1">Upload Photos of your work</h1>
         <span class="form-subtitle">PNG, JPEG & GIFs are accepted</span>
+        <label for="introText">Introductory Text:</label>
+        <input type="text" id="introText" placeholder="Enter introductory text">
+        <br>
         <label for="files" class="custom-file-upload">
             <div class="upload-button">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

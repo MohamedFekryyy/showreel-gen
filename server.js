@@ -1,54 +1,71 @@
 const express = require('express');
 const multer = require('multer');
-const { exec } = require('child_process');
-const path = require('path');
+const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs');
+const path = require('path');
 
 const app = express();
 const upload = multer({ dest: 'uploads/' });
 
-// Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static('public'));
 
 app.post('/upload', upload.array('files'), (req, res) => {
-    const files = req.files.map(file => file.path);
+    const introText = req.body.introText || 'Introductory Text';
+    const files = req.files;
 
-    // Ensure the showreels directory exists
-    const showreelsDir = path.join(__dirname, 'showreels');
-    if (!fs.existsSync(showreelsDir)) {
-        fs.mkdirSync(showreelsDir);
-    }
+    // Create a video from the intro text
+    const introVideoPath = path.join(__dirname, 'uploads', 'intro.mp4');
+    const textFilePath = path.join(__dirname, 'uploads', 'intro.txt');
+    fs.writeFileSync(textFilePath, introText);
 
-    // Process the files to create a showreel
-    const outputFileName = `${Date.now()}.mp4`;
-    const outputFilePath = path.join(showreelsDir, outputFileName);
+    const introCommand = ffmpeg()
+        .input('color=c=white:s=1280x720:d=3')
+        .inputOptions([
+            '-f', 'lavfi',
+            '-t', '3'
+        ])
+        .complexFilter([
+            `drawtext=fontfile=/path/to/font.ttf:textfile=${textFilePath}:fontcolor=black:fontsize=48:x=(w-text_w)/2:y=(h-text_h)/2`
+        ])
+        .outputOptions('-t 3')
+        .output(introVideoPath);
 
-    // Resize images to fit within a 1280x720 box while maintaining aspect ratio and adding black bars
-    const resizeFilter = 'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1';
+    introCommand.on('end', () => {
+        // Create videos from images
+        const imageVideos = files.map(file => {
+            const imageVideoPath = path.join(__dirname, 'uploads', `${file.filename}.mp4`);
+            return new Promise((resolve, reject) => {
+                ffmpeg(file.path)
+                    .loop(3)
+                    .size('1280x720')
+                    .output(imageVideoPath)
+                    .on('end', () => resolve(imageVideoPath))
+                    .on('error', reject)
+                    .run();
+            });
+        });
 
-    const inputs = files.map(file => `-i ${file}`).join(' ');
-    const filters = files.map((file, index) => `[${index}:v]${resizeFilter},tpad=stop_mode=clone:stop_duration=1[v${index}]`).join(';');
-    const concatFilter = files.map((file, index) => `[v${index}]`).join('') + `concat=n=${files.length}:v=1:a=0,format=yuv420p[v]`;
-
-    const ffmpegCommand = `ffmpeg -y ${inputs} -filter_complex "${filters};${concatFilter}" -map "[v]" ${outputFilePath}`;
-
-    exec(ffmpegCommand, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Error: ${error.message}`);
-            console.error(`stderr: ${stderr}`);
-            return res.status(500).json({ error: 'Error creating showreel' });
-        }
-
-        const downloadUrl = `/showreels/${outputFileName}`;
-        res.json({ downloadUrl });
-    });
+        // Wait for all image videos to be created
+        Promise.all(imageVideos).then(imageVideoPaths => {
+            // Concatenate intro video with image videos
+            const finalVideoPath = path.join(__dirname, 'uploads', 'showreel.mp4');
+            ffmpeg()
+                .input(introVideoPath)
+                .input(...imageVideoPaths)
+                .outputOptions('-filter_complex', `[0:v][1:v][2:v][3:v]concat=n=${imageVideoPaths.length + 1}:v=1:a=0,format=yuv420p[v]`)
+                .output(finalVideoPath)
+                .on('end', () => {
+                    res.json({ downloadUrl: `/uploads/showreel.mp4` });
+                })
+                .on('error', (err) => {
+                    console.error(err);
+                    res.status(500).send('Error creating showreel');
+                })
+                .run();
+        });
+    }).run();
 });
 
-// Serve showreels directory as static files
-app.use('/showreels', express.static(path.join(__dirname, 'showreels')));
-
-// Start the server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+app.listen(3000, () => {
+    console.log('Server is running on port 3000');
 });

@@ -2,6 +2,7 @@ const filesInput = document.getElementById('files');
 const createShowreelBtn = document.getElementById('createShowreelBtn');
 const tooltip = document.getElementById('tooltip');
 const gridContainer = document.getElementById('gridContainer');
+const introTextInput = document.getElementById('introText');
 let allFiles = []; // Array to keep track of all files
 
 filesInput.addEventListener('change', function(event) {
@@ -19,6 +20,7 @@ filesInput.addEventListener('change', function(event) {
         reader.onload = function(e) {
             const div = document.createElement('div');
             div.className = 'grid-item';
+            div.dataset.index = index; // Set the index as a data attribute
             
             const img = document.createElement('img');
             img.src = e.target.result;
@@ -62,6 +64,9 @@ document.getElementById('uploadForm').addEventListener('submit', function(event)
     event.preventDefault();
     document.getElementById('loadingSpinner').style.display = 'block';
     const formData = new FormData();
+    const introText = introTextInput.value;
+
+    formData.append('introText', introText); // Add the intro text to the form data
     allFiles.forEach((file) => {
         formData.append('files', file);
     });
@@ -79,4 +84,23 @@ document.getElementById('uploadForm').addEventListener('submit', function(event)
         document.getElementById('loadingSpinner').style.display = 'none';
         alert('Error creating showreel.');
     });
+});
+
+// Initialize Sortable on the grid container
+new Sortable(gridContainer, {
+    animation: 150,
+    onEnd: function (/**Event*/evt) {
+        // Update allFiles array to match the new order
+        const newOrder = [];
+        gridContainer.querySelectorAll('.grid-item').forEach(item => {
+            const index = parseInt(item.dataset.index, 10);
+            newOrder.push(allFiles[index]);
+        });
+        allFiles = newOrder;
+
+        // Update the files input
+        const dt = new DataTransfer();
+        allFiles.forEach(f => dt.items.add(f));
+        filesInput.files = dt.files;
+    },
 });

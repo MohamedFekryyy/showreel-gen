@@ -173,6 +173,10 @@ font-size: 16px;
 cursor: pointer;
 }
 
+.create-btn:hover {
+
+}
+
 .create-btn:disabled {
     background: #F3F4F6;
     box-shadow: none;
@@ -202,3 +206,4 @@ cursor: pointer;
         justify-content: center;
         margin: 20px auto;
     }
+
