@@ -27,7 +27,7 @@ app.post('/upload', upload.array('files'), (req, res) => {
     const resizeFilter = 'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1';
 
     const inputs = files.map(file => `-i ${file}`).join(' ');
-    const filters = files.map((file, index) => `[${index}:v]${resizeFilter},tpad=stop_mode=clone:stop_duration=2[v${index}]`).join(';');
+    const filters = files.map((file, index) => `[${index}:v]${resizeFilter},tpad=stop_mode=clone:stop_duration=1[v${index}]`).join(';');
     const concatFilter = files.map((file, index) => `[v${index}]`).join('') + `concat=n=${files.length}:v=1:a=0,format=yuv420p[v]`;
 
     const ffmpegCommand = `ffmpeg -y ${inputs} -filter_complex "${filters};${concatFilter}" -map "[v]" ${outputFilePath}`;

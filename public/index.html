@@ -4,32 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Showreel Creator</title>
-    <style>
-        .loading-spinner {
-            display: none;
-            border: 16px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 16px solid #3498db;
-            width: 120px;
-            height: 120px;
-            animation: spin 2s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <div class="nav-wrapper">
+        <h2 class="nav-logo">showreel-gen</h2>
+        <span class="nav-link">feedback?</span>
+    </div>
+    <main class="main-home">
     <form id="uploadForm" enctype="multipart/form-data">
-        <label for="files">Upload Images/GIFs:</label>
+        <h1  class="label-h1">Upload Photos of your work</h1>
+        <span class="form-subtitle">PNG, JPEG & GIFs are accepted</span>
+        <label for="files" class="custom-file-upload">
+            <div class="upload-button">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 4V20" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M4 12H20" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </label>
         <input type="file" id="files" name="files" multiple>
         <br>
-        <button type="submit">Create Showreel</button>
+        <button type="submit" id="createShowreelBtn" class="create-btn" disabled>
+        <img src="assets/sparkling-fill.svg"/>
+            <span>Create Showreel</span>
+        </button>
+        <span id="tooltip" class="tooltip">You need to upload at least 6 images to create a showreel.</span>
+
     </form>
     <div class="loading-spinner" id="loadingSpinner"></div>
     <a id="downloadLink" href="#" style="display: none;">Download Showreel</a>
-
+    <div class="grid-container" id="gridContainer"></div>
+</main>
     <script src="script.js"></script>
 </body>
 </html>
