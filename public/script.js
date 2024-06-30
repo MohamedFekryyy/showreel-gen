@@ -1,16 +1,20 @@
 const filesInput = document.getElementById('files');
 const createShowreelBtn = document.getElementById('createShowreelBtn');
 const tooltip = document.getElementById('tooltip');
+const gridContainer = document.getElementById('gridContainer');
+let allFiles = []; // Array to keep track of all files
 
 filesInput.addEventListener('change', function(event) {
-    const gridContainer = document.getElementById('gridContainer');
-    gridContainer.innerHTML = ''; // Clear the grid before adding new images
-    const files = Array.from(event.target.files);
+    const newFiles = Array.from(event.target.files);
+    allFiles = allFiles.concat(newFiles); // Append new files to the existing files
+
+    // Clear the grid before adding new images
+    gridContainer.innerHTML = ''; 
 
     // Enable or disable the Create Showreel button based on the number of files
-    createShowreelBtn.disabled = files.length < 6;
+    createShowreelBtn.disabled = allFiles.length < 6;
 
-    files.forEach((file, index) => {
+    allFiles.forEach((file, index) => {
         const reader = new FileReader();
         reader.onload = function(e) {
             const div = document.createElement('div');
@@ -25,15 +29,16 @@ filesInput.addEventListener('change', function(event) {
             closeButton.innerHTML = '&times;';
             closeButton.addEventListener('click', () => {
                 div.remove();
-                // Remove file from input.files
+                // Remove file from allFiles array
+                allFiles.splice(index, 1);
+
+                // Update the files input
                 const dt = new DataTransfer();
-                files.forEach((f, i) => {
-                    if (i !== index) dt.items.add(f);
-                });
+                allFiles.forEach(f => dt.items.add(f));
                 filesInput.files = dt.files;
 
                 // Update the Create Showreel button state
-                createShowreelBtn.disabled = dt.files.length < 6;
+                createShowreelBtn.disabled = allFiles.length < 6;
             });
 
             div.appendChild(closeButton);
@@ -56,7 +61,11 @@ createShowreelBtn.addEventListener('mouseleave', function() {
 document.getElementById('uploadForm').addEventListener('submit', function(event) {
     event.preventDefault();
     document.getElementById('loadingSpinner').style.display = 'block';
-    var formData = new FormData(this);
+    const formData = new FormData();
+    allFiles.forEach((file) => {
+        formData.append('files', file);
+    });
+
     fetch('/upload', {
         method: 'POST',
         body: formData
