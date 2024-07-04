@@ -29,7 +29,7 @@ app.post('/upload', upload.array('files'), (req, res) => {
     // Create a video from the intro image
     const introVideoPath = path.join(__dirname, 'uploads', 'intro.mp4');
     ffmpeg(introImagePath)
-        .loop(3)
+        .loop(2)
         .size('1280x720')
         .output(introVideoPath)
         .on('end', () => {
@@ -48,7 +48,7 @@ app.post('/upload', upload.array('files'), (req, res) => {
                 });
             });
 
-            // Wait for all image videos to be created
+            
             Promise.all(imageVideos).then(imageVideoPaths => {
                 console.log('All image videos created:', imageVideoPaths);
                 // Concatenate intro video with the first image video for testing
@@ -62,7 +62,7 @@ app.post('/upload', upload.array('files'), (req, res) => {
                 ffmpegCommand
                     .outputOptions('-filter_complex', filterComplex)
                     .outputOptions('-map', '[v]')
-                    .outputOptions('-loglevel', 'verbose') // Enable verbose logging
+                    .outputOptions('-loglevel', 'verbose')
                     .output(finalVideoPath)
                     .on('end', () => {
                         console.log('Showreel created at', finalVideoPath);

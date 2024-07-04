@@ -1,11 +1,33 @@
 const filesInput = document.getElementById('files');
+const nextStepBtn = document.getElementById('nextStepBtn');
+const nextStep2Btn = document.getElementById('nextStep2Btn');
 const createShowreelBtn = document.getElementById('createShowreelBtn');
 const tooltip = document.getElementById('tooltip');
 const gridContainer = document.getElementById('gridContainer');
 const introTextInput = document.getElementById('introText');
+const step1 = document.getElementById('step1');
+const step2 = document.getElementById('step2');
+const step3 = document.getElementById('step3');
 let allFiles = []; // Array to keep track of all files
 
 const MAX_FILES = 24; // Maximum number of files allowed
+
+function updateNextStepButton() {
+    if (allFiles.length >= 4) {
+        nextStepBtn.style.display = 'block';
+    } else {
+        nextStepBtn.style.display = 'none';
+    }
+}
+
+// Function to update the visibility of the "Create Showreel" button
+function updateShowreelButton() {
+    if (allFiles.length >= 6) {
+        createShowreelBtn.disabled = false;
+    } else {
+        createShowreelBtn.disabled = true;
+    }
+}
 
 filesInput.addEventListener('change', function(event) {
     const newFiles = Array.from(event.target.files);
@@ -20,8 +42,8 @@ filesInput.addEventListener('change', function(event) {
     // Clear the grid before adding new images
     gridContainer.innerHTML = ''; 
 
-    // Enable or disable the Create Showreel button based on the number of files
-    createShowreelBtn.disabled = allFiles.length < 6;
+    // Update the visibility of the Next Step button
+    updateNextStepButton();
 
     allFiles.forEach((file, index) => {
         const reader = new FileReader();
@@ -47,8 +69,9 @@ filesInput.addEventListener('change', function(event) {
                 allFiles.forEach(f => dt.items.add(f));
                 filesInput.files = dt.files;
 
-                // Update the Create Showreel button state
-                createShowreelBtn.disabled = allFiles.length < 6;
+                // Update the visibility of the Next Step button
+                updateNextStepButton();
+                updateShowreelButton();
             });
 
             div.appendChild(closeButton);
@@ -56,6 +79,17 @@ filesInput.addEventListener('change', function(event) {
         }
         reader.readAsDataURL(file);
     });
+});
+
+nextStepBtn.addEventListener('click', function() {
+    step1.style.display = 'none';
+    step2.style.display = 'block';
+});
+
+nextStep2Btn.addEventListener('click', function() {
+    step2.style.display = 'none';
+    step3.style.display = 'block';
+    updateShowreelButton();
 });
 
 createShowreelBtn.addEventListener('mouseenter', function() {

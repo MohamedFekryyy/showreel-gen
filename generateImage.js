@@ -13,7 +13,7 @@ function generateIntroImage(text, outputPath) {
 
     // Set text properties
     context.fillStyle = '#000000';
-    context.font = '48px sans-serif';
+    context.font = '48px Satoshi';
     context.textAlign = 'center';
     context.textBaseline = 'middle';
 
